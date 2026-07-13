@@ -27,25 +27,22 @@
     },
     {
       "parameters": {
-        "sendTo": "={{ $json.email_destino }}",
+        "fromEmail": "rochaecia@gruporc.net.br",
+        "toEmail": "={{ $json.email_destino }}",
         "subject": "={{ $json.assunto }}",
-        "emailType": "html",
-        "message": "=<h2>Espelho de Ponto — {{ $json.mes }}/{{ $json.ano }}</h2><p>Segue em anexo a planilha do mês. Resumo por colaborador:</p><ul>{{ ($json.resumo || []).map(r => `<li><b>${r.colaborador}</b>: ${r.horas_trabalhadas} trabalhadas · HE ${r.he_total} · banco ${r.banco_horas} · faltas ${r.faltas}</li>`).join('') }}</ul><p style=\"color:#888;font-size:12px\">Enviado automaticamente pelo sistema Ponto Doméstico.</p>",
+        "emailFormat": "html",
+        "html": "=<h2>Espelho de Ponto — {{ $json.mes }}/{{ $json.ano }}</h2><p>Segue em anexo a planilha do mês. Resumo por colaborador:</p><ul>{{ ($json.resumo || []).map(r => `<li><b>${r.colaborador}</b>: ${r.horas_trabalhadas} trabalhadas · HE ${r.he_total} · banco ${r.banco_horas} · faltas ${r.faltas}</li>`).join('') }}</ul><p style=\"color:#888;font-size:12px\">Enviado automaticamente pelo sistema Ponto Doméstico.</p>",
         "options": {
-          "attachmentsUi": {
-            "attachmentsBinary": [
-              { "property": "data" }
-            ]
-          }
+          "attachments": "data"
         }
       },
-      "id": "gmail-envia",
-      "name": "Gmail (envia relatório)",
-      "type": "n8n-nodes-base.gmail",
+      "id": "smtp-envia",
+      "name": "Enviar e-mail (SMTP gruporc)",
+      "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [740, 300],
       "credentials": {
-        "gmailOAuth2": { "id": "SUBSTITUA", "name": "Gmail account" }
+        "smtp": { "id": "SUBSTITUA", "name": "SMTP gruporc" }
       }
     }
   ],
@@ -54,7 +51,7 @@
       "main": [[{ "node": "Base64 → Anexo", "type": "main", "index": 0 }]]
     },
     "Base64 → Anexo": {
-      "main": [[{ "node": "Gmail (envia relatório)", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Enviar e-mail (SMTP gruporc)", "type": "main", "index": 0 }]]
     }
   },
   "active": false,

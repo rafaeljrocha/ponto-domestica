@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Registrar ponto{% endblock %}
+{% block body %}
+<div class="reg-wrap"
+     data-lat="{{ local.latitude if local }}"
+     data-lng="{{ local.longitude if local }}"
+     data-raio="{{ local.raio_efetivo if local }}"
+     data-selfie="{{ '1' if colab.exige_selfie else '0' }}">
+  <div class="reg-top">
+    <div class="who">{{ colab.nome }}<small>{{ colab.funcao or 'Colaborador(a)' }}</small></div>
+    <a href="{{ url_for('auth.colab_logout') }}">Sair</a>
+  </div>
+
+  <div class="reg-main">
+    <div class="reg-state" id="estado">{{ 'Registrar saída' if proximo == 'saida' else 'Registrar entrada' }}</div>
+    <div class="reg-clock" id="relogio">--:--:--</div>
+
+    <button class="big-btn {{ 'saida' if proximo == 'saida' else '' }}" id="botao" data-tipo="{{ proximo }}">
+      <span id="btn-label">{{ 'Bater saída' if proximo == 'saida' else 'Bater entrada' }}</span>
+      <small id="btn-sub">toque para registrar</small>
+    </button>
+
+    <div class="geo-hint" id="geo">
+      <span class="pill wait" id="geo-pill">localizando…</span>
+      <span id="geo-txt">verificando sua posição</span>
+    </div>
+  </div>
+
+  <div class="today">
+    <h3>Hoje</h3>
+    <div id="lista-hoje">
+      {% for r in regs %}
+        <div class="punch">
+          <span class="dot {{ 'in' if r.tipo=='entrada' else 'out' }}"></span>
+          {{ 'Entrada' if r.tipo=='entrada' else 'Saída' }}
+          {% if not r.dentro_area %}<span class="out-flag">· fora da área</span>{% endif %}
+          <span class="t">{{ r.momento.strftime('%H:%M') }}</span>
+        </div>
+      {% else %}
+        <div class="muted" style="color:#A9C6BD;font-size:.88rem">Nenhum registro hoje ainda.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- comprovante -->
+<div class="receipt" id="receipt">
+  <div class="receipt-card">
+    <div class="stamp" id="stamp">✓</div>
+    <h3 id="rc-tipo">Registrado</h3>
+    <div class="code" id="rc-code">—</div>
+    <table>
+      <tr><td>Colaborador</td><td id="rc-nome">—</td></tr>
+      <tr><td>Data/hora</td><td id="rc-hora">—</td></tr>
+      <tr><td>Localização</td><td id="rc-area">—</td></tr>
+    </table>
+    <button class="btn" style="width:100%" onclick="document.getElementById('receipt').classList.remove('show')">Fechar</button>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/registro.js') }}"></script>
+{% endblock %}

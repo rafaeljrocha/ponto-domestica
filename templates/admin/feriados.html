@@ -1,0 +1,39 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Feriados{% endblock %}
+{% block content %}
+<div class="topbar"><div><div class="eyebrow">Cadastros</div><h1>Feriados</h1></div></div>
+<p class="muted" style="margin-top:-14px">Trabalho em feriado é classificado como <strong>hora extra 100%</strong>. Nacionais e móveis já vêm pré-carregados; ajuste os municipais/estaduais conforme sua realidade.</p>
+
+<div class="form-panel">
+  <form method="post" class="row" style="align-items:end">
+    <div class="field"><label>Data</label><input type="date" name="data" required></div>
+    <div class="field"><label>Nome</label><input name="nome" required></div>
+    <div class="field"><label>Escopo</label>
+      <select name="escopo">
+        <option value="nacional">Nacional</option><option value="estadual">Estadual</option>
+        <option value="municipal">Municipal</option><option value="custom" selected>Personalizado</option>
+      </select></div>
+    <div class="field"><button class="btn amber">Adicionar</button></div>
+  </form>
+</div>
+
+<div class="panel">
+  <h2>Calendário de feriados</h2>
+  <table>
+    <thead><tr><th>Data</th><th>Dia</th><th>Nome</th><th>Escopo</th><th></th></tr></thead>
+    <tbody>
+    {% set dias_abrev = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'] %}
+    {% for f in feriados %}
+      <tr>
+        <td style="font-variant-numeric:tabular-nums">{{ f.data.strftime('%d/%m/%Y') }}</td>
+        <td>{{ dias_abrev[f.data.weekday()] }}</td>
+        <td><strong>{{ f.nome }}</strong></td>
+        <td><span class="badge s">{{ f.escopo }}</span></td>
+        <td class="num"><form method="post" action="{{ url_for('admin.feriado_excluir', fid=f.id) }}" onsubmit="return confirm('Remover feriado?')">
+          <button class="btn ghost sm">Remover</button></form></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

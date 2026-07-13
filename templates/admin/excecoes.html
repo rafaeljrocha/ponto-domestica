@@ -1,0 +1,43 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Férias e folgas{% endblock %}
+{% block content %}
+<div class="topbar"><div><div class="eyebrow">Cadastros</div><h1>Férias e folgas</h1></div></div>
+<p class="muted" style="margin-top:-14px">Períodos aqui registrados <strong>abonam</strong> atrasos e faltas do colaborador.</p>
+
+<div class="form-panel">
+  <form method="post" class="row" style="align-items:end">
+    <div class="field"><label>Colaborador</label>
+      <select name="colaborador_id" required>
+        {% for c in colaboradores %}<option value="{{ c.id }}">{{ c.nome }}</option>{% endfor %}
+      </select></div>
+    <div class="field"><label>Tipo</label>
+      <select name="tipo"><option value="ferias">Férias</option><option value="folga">Folga</option></select></div>
+    <div class="field"><label>Início</label><input type="date" name="data_inicio" required></div>
+    <div class="field"><label>Fim</label><input type="date" name="data_fim" required></div>
+    <div class="field"><label>Descrição</label><input name="descricao" placeholder="opcional"></div>
+    <div class="field"><button class="btn amber">Adicionar</button></div>
+  </form>
+</div>
+
+<div class="panel">
+  <h2>Lançamentos</h2>
+  <table>
+    <thead><tr><th>Colaborador</th><th>Tipo</th><th>Início</th><th>Fim</th><th>Descrição</th><th></th></tr></thead>
+    <tbody>
+    {% for e in excecoes %}
+      <tr>
+        <td><strong>{{ mapa.get(e.colaborador_id, '—') }}</strong></td>
+        <td><span class="badge {{ 'b' if e.tipo=='ferias' else 'a' }}">{{ e.tipo }}</span></td>
+        <td>{{ e.data_inicio.strftime('%d/%m/%Y') }}</td>
+        <td>{{ e.data_fim.strftime('%d/%m/%Y') }}</td>
+        <td>{{ e.descricao }}</td>
+        <td class="num"><form method="post" action="{{ url_for('admin.excecao_excluir', eid=e.id) }}" onsubmit="return confirm('Remover?')">
+          <button class="btn ghost sm">Remover</button></form></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6" class="muted" style="text-align:center;padding:24px">Nenhum lançamento.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "admin/base_admin.html" %}
+{% set meses = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'] %}
+{% block title %}Relatório mensal{% endblock %}
+{% block content %}
+<div class="topbar"><div><div class="eyebrow">Operação</div><h1>Relatório mensal</h1></div></div>
+
+<div class="form-panel">
+  <p>O envio automático ocorre no dia configurado, referente ao mês anterior. Você também pode enviar manualmente abaixo.</p>
+  <p class="muted" style="font-size:.88rem">
+    Destino: <strong>{{ email or '—' }}</strong> ·
+    Webhook n8n: {% if webhook %}<span class="badge g">configurado</span>{% else %}<span class="badge r">não configurado</span> — defina em Configurações{% endif %}
+  </p>
+  <form method="post" action="{{ url_for('report.enviar') }}" class="inline">
+    <div class="field"><label>Mês</label>
+      <select name="mes">{% for i in range(1,13) %}<option value="{{ i }}" {{ 'selected' if i==mes }}>{{ meses[i] }}</option>{% endfor %}</select></div>
+    <div class="field"><label>Ano</label>
+      <select name="ano">{% for y in range(ano-2, ano+2) %}<option value="{{ y }}" {{ 'selected' if y==ano }}>{{ y }}</option>{% endfor %}</select></div>
+    <div class="field"><button class="btn amber" {{ 'disabled' if not webhook }}>Enviar agora</button></div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<style>
+  @page { size:A4; margin:1.6cm 1.4cm; }
+  body{font-family:'Helvetica Neue',Arial,sans-serif; color:#17211E; font-size:10px}
+  h1{font-size:16px; margin:0; color:#0F3D3E}
+  .sub{color:#6B7F72; font-size:10px; margin:2px 0 14px}
+  .meta{width:100%; margin-bottom:14px; font-size:10px}
+  .meta td{padding:2px 0}
+  table.grade{width:100%; border-collapse:collapse; font-size:9px}
+  table.grade th{background:#0F3D3E; color:#fff; padding:5px 6px; text-align:left; font-size:8.5px; text-transform:uppercase; letter-spacing:.04em}
+  table.grade td{padding:4px 6px; border-bottom:.5px solid #E4DDCC}
+  table.grade tr.wk td{background:#F5F1E9}
+  .num{text-align:right; font-variant-numeric:tabular-nums}
+  .resumo{width:100%; margin-top:16px; font-size:10px; border-collapse:collapse}
+  .resumo td{padding:4px 8px; border-bottom:.5px solid #E4DDCC}
+  .resumo td:last-child{text-align:right; font-weight:bold}
+  .resumo .hl{background:#FBEED6}
+  .ass{margin-top:40px; display:flex; justify-content:space-between; font-size:10px}
+  .ass .linha{border-top:.8px solid #17211E; width:44%; padding-top:5px; text-align:center; color:#6B7F72}
+  .foot{margin-top:18px; font-size:8px; color:#8A8577; line-height:1.4}
+  .badge{font-size:8px; padding:1px 5px; border-radius:8px; background:#EEEBE2; color:#6B7F72}
+</style></head>
+<body>
+  <h1>Espelho de Ponto</h1>
+  <div class="sub">Controle interno de jornada — LC 150/2015</div>
+  <table class="meta">
+    <tr><td><strong>Colaborador:</strong> {{ colab.nome }}</td>
+        <td><strong>Função:</strong> {{ colab.funcao or '—' }}</td>
+        <td><strong>Competência:</strong> {{ mes_nome }}/{{ ano }}</td></tr>
+    <tr><td><strong>Tipo:</strong> {{ colab.tipo }}</td>
+        <td><strong>Local:</strong> {{ colab.local.nome if colab.local else '—' }}</td>
+        <td><strong>Emitido em:</strong> {{ dias[0].dia.strftime('%d/%m/%Y') if dias }}</td></tr>
+  </table>
+
+  <table class="grade">
+    <thead><tr><th>Data</th><th>Dia</th><th class="num">Trabalhado</th><th class="num">Interv.</th>
+      <th class="num">Atraso</th><th class="num">HE 50%</th><th class="num">HE 100%</th><th class="num">Noturno</th><th>Situação</th></tr></thead>
+    <tbody>
+    {% for d in dias %}
+      <tr class="{{ 'wk' if d.dia.weekday()>=5 or d.feriado }}">
+        <td>{{ d.dia.strftime('%d/%m') }}</td>
+        <td>{{ dias_abrev[d.dia.weekday()] }}</td>
+        <td class="num">{{ fmt(d.liquido_min) if d.liquido_min else '' }}</td>
+        <td class="num">{{ fmt(d.intervalo_min) if d.intervalo_min else '' }}</td>
+        <td class="num">{{ fmt(d.atraso_min) if d.atraso_min else '' }}</td>
+        <td class="num">{{ fmt(d.he50_min) if d.he50_min else '' }}</td>
+        <td class="num">{{ fmt(d.he100_min) if d.he100_min else '' }}</td>
+        <td class="num">{{ fmt(d.noturno_min) if d.noturno_min else '' }}</td>
+        <td>
+          {%- if d.falta %}Falta {% endif -%}
+          {%- if d.abonado and not d.trabalhou %}Abonado {% endif -%}
+          {%- if d.feriado %}Feriado {% endif -%}
+          {%- if d.aberto %}Jornada aberta{% endif -%}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <table class="resumo">
+    <tr><td>Horas trabalhadas no mês</td><td>{{ fmt(t.liquido_min) }}</td></tr>
+    <tr><td>Hora extra 50%</td><td>{{ fmt(t.he50_min) }}</td></tr>
+    <tr><td>Hora extra 100% (domingo/feriado)</td><td>{{ fmt(t.he100_min) }}</td></tr>
+    <tr class="hl"><td>Hora extra total</td><td>{{ fmt(t.he_total_min) }}</td></tr>
+    <tr><td>HE pagável (primeiras 40h)</td><td>{{ fmt(t.he_pagavel_min) }}</td></tr>
+    <tr><td>Excedente p/ banco de horas</td><td>{{ fmt(t.banco_min) }}</td></tr>
+    <tr><td>Adicional noturno</td><td>{{ fmt(t.noturno_min) }}</td></tr>
+    <tr><td>Atrasos</td><td>{{ fmt(t.atraso_min) }}</td></tr>
+    <tr><td>Faltas / abonadas</td><td>{{ t.faltas }} / {{ t.faltas_abonadas }}</td></tr>
+    <tr><td>Dias trabalhados</td><td>{{ t.dias_trabalhados }}</td></tr>
+  </table>
+
+  <div class="ass">
+    <div class="linha">{{ colab.nome }}<br>Colaborador(a)</div>
+    <div class="linha">Empregador(a)</div>
+  </div>
+
+  <div class="foot">
+    Documento de controle interno, gerado eletronicamente. As horas extras seguem os parâmetros da LC 150/2015
+    (jornada de 8h/44h; adicional mínimo de 50%; domingo/feriado em dobro). O intervalo é pré-assinalado conforme
+    a regra de comparecimento cadastrada. A conferência e a assinatura das partes confirmam a jornada do período.
+  </div>
+</body></html>

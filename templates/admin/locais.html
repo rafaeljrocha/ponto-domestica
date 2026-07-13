@@ -1,0 +1,53 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Locais / Geofence{% endblock %}
+{% block content %}
+<div class="topbar"><div><div class="eyebrow">Cadastros</div><h1>Locais / Geofence</h1></div></div>
+
+<div class="form-panel">
+  <h2 style="font-family:Fraunces;margin:0 0 14px">Novo local</h2>
+  <p class="muted" style="margin:-6px 0 16px;font-size:.88rem">
+    No Google Maps, toque e segure no ponto, copie as coordenadas (ex.: <code>-23.451737, -51.928168</code>)
+    e cole no campo abaixo. O raio define a área; a tolerância é uma folga para a imprecisão do GPS.</p>
+  <form method="post">
+    <div class="row">
+      <div class="field"><label>Nome</label><input name="nome" placeholder="Ex.: Residência – Casa G23" required></div>
+      <div class="field"><label>Endereço (opcional)</label><input name="endereco"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Coordenadas (colar do Google Maps)</label><input name="coord" placeholder="-23.451737, -51.928168"></div>
+      <div class="field"><label>Raio (m)</label><input type="number" name="raio_m" value="150"></div>
+      <div class="field"><label>Tolerância (m)</label><input type="number" name="tolerancia_m" value="80"></div>
+    </div>
+    <button class="btn amber">Cadastrar local</button>
+  </form>
+</div>
+
+<div class="panel">
+  <h2>Locais cadastrados</h2>
+  <table>
+    <thead><tr><th>Nome</th><th>Coordenadas</th><th>Raio efetivo</th><th>Situação</th><th></th></tr></thead>
+    <tbody>
+    {% for l in locais %}
+      <tr>
+        <td><strong>{{ l.nome }}</strong><br><span class="muted" style="font-size:.8rem">{{ l.endereco }}</span></td>
+        <td style="font-variant-numeric:tabular-nums">{{ '%.6f'|format(l.latitude) }}, {{ '%.6f'|format(l.longitude) }}</td>
+        <td>{{ l.raio_m }}m + {{ l.tolerancia_m }}m = <strong>{{ l.raio_efetivo }}m</strong></td>
+        <td>{% if l.ativo %}<span class="badge g">Ativo</span>{% else %}<span class="badge s">Inativo</span>{% endif %}</td>
+        <td class="num"><button class="btn ghost sm" onclick="document.getElementById('e{{ l.id }}').classList.toggle('hidden')">Editar</button></td>
+      </tr>
+      <tr id="e{{ l.id }}" class="hidden"><td colspan="5" style="background:#FBF9F3">
+        <form method="post" action="{{ url_for('admin.local_editar', lid=l.id) }}" class="row" style="align-items:end">
+          <div class="field"><label>Nome</label><input name="nome" value="{{ l.nome }}"></div>
+          <div class="field"><label>Endereço</label><input name="endereco" value="{{ l.endereco }}"></div>
+          <div class="field"><label>Coordenadas</label><input name="coord" placeholder="{{ '%.6f'|format(l.latitude) }}, {{ '%.6f'|format(l.longitude) }}"></div>
+          <div class="field"><label>Raio (m)</label><input type="number" name="raio_m" value="{{ l.raio_m }}"></div>
+          <div class="field"><label>Tolerância (m)</label><input type="number" name="tolerancia_m" value="{{ l.tolerancia_m }}"></div>
+          <div class="field check" style="margin-bottom:14px"><input type="checkbox" name="ativo" {{ 'checked' if l.ativo }}><label style="margin:0">Ativo</label></div>
+          <div class="field"><button class="btn amber">Salvar</button></div>
+        </form>
+      </td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

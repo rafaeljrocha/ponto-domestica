@@ -1,0 +1,63 @@
+{
+  "name": "Ponto Doméstico – Relatório Mensal",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ponto-relatorio",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-ponto",
+      "name": "Webhook (recebe do Flask)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300],
+      "webhookId": "ponto-relatorio"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Converte o arquivo base64 (planilha) recebido do Flask em binário para anexo\nconst body = $input.first().json.body || $input.first().json;\nconst b64 = body.arquivo_base64;\nconst filename = body.arquivo_nome || 'espelho.xlsx';\nconst buffer = Buffer.from(b64, 'base64');\nconst binary = await this.helpers.prepareBinaryData(\n  buffer, filename,\n  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'\n);\nreturn [{ json: body, binary: { data: binary } }];"
+      },
+      "id": "code-base64",
+      "name": "Base64 → Anexo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email_destino }}",
+        "subject": "={{ $json.assunto }}",
+        "emailType": "html",
+        "message": "=<h2>Espelho de Ponto — {{ $json.mes }}/{{ $json.ano }}</h2><p>Segue em anexo a planilha do mês. Resumo por colaborador:</p><ul>{{ ($json.resumo || []).map(r => `<li><b>${r.colaborador}</b>: ${r.horas_trabalhadas} trabalhadas · HE ${r.he_total} · banco ${r.banco_horas} · faltas ${r.faltas}</li>`).join('') }}</ul><p style=\"color:#888;font-size:12px\">Enviado automaticamente pelo sistema Ponto Doméstico.</p>",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              { "property": "data" }
+            ]
+          }
+        }
+      },
+      "id": "gmail-envia",
+      "name": "Gmail (envia relatório)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [740, 300],
+      "credentials": {
+        "gmailOAuth2": { "id": "SUBSTITUA", "name": "Gmail account" }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook (recebe do Flask)": {
+      "main": [[{ "node": "Base64 → Anexo", "type": "main", "index": 0 }]]
+    },
+    "Base64 → Anexo": {
+      "main": [[{ "node": "Gmail (envia relatório)", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "tags": ["ponto-domestico"]
+}

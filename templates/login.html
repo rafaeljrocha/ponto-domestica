@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Entrar · Ponto Doméstico{% endblock %}
+{% block body %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="brand">Ponto Doméstico<small>Controle de jornada</small></div>
+    {% if modo == 'admin' %}
+      <p class="sub">Acesso do administrador</p>
+      {% with msgs = get_flashed_messages(with_categories=true) %}
+        {% for cat, m in msgs %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}
+      {% endwith %}
+      <form method="post">
+        <div class="field"><label>Usuário</label><input name="usuario" autofocus required></div>
+        <div class="field"><label>Senha</label><input type="password" name="senha" required></div>
+        <button class="btn amber" style="width:100%">Entrar</button>
+      </form>
+    {% else %}
+      <p class="sub">Selecione seu nome e digite seu PIN</p>
+      {% with msgs = get_flashed_messages(with_categories=true) %}
+        {% for cat, m in msgs %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}
+      {% endwith %}
+      <form method="post">
+        <div class="field">
+          <label>Nome</label>
+          <select name="colaborador_id" required>
+            <option value="">— selecione —</option>
+            {% for c in colaboradores %}<option value="{{ c.id }}">{{ c.nome }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field"><label>PIN</label>
+          <input type="password" name="pin" inputmode="numeric" pattern="[0-9]*" required></div>
+        <button class="btn amber" style="width:100%">Entrar</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

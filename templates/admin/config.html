@@ -1,0 +1,39 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Configurações{% endblock %}
+{% block content %}
+<div class="topbar"><div><div class="eyebrow">Operação</div><h1>Configurações</h1></div></div>
+
+<form method="post">
+  <div class="form-panel">
+    <h2 style="font-family:Fraunces;margin:0 0 16px">Relatório mensal</h2>
+    <div class="row">
+      <div class="field"><label>Dia do envio automático</label>
+        <input type="number" name="relatorio_dia" min="1" max="28" value="{{ cfg.relatorio_dia or '1' }}">
+        <span class="muted" style="font-size:.8rem">Envia sempre neste dia, referente ao mês anterior.</span></div>
+      <div class="field"><label>Período de fechamento</label>
+        <select name="fechamento">
+          <option value="calendario" {{ 'selected' if cfg.fechamento=='calendario' }}>Mês-calendário (1 ao último dia)</option>
+        </select>
+        <span class="muted" style="font-size:.8rem">Fechamento personalizado (ex.: 21 a 20) pode ser adicionado depois.</span></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>E-mail de destino</label><input name="relatorio_email" value="{{ cfg.relatorio_email }}"></div>
+      <div class="field"><label>Webhook do n8n</label><input name="n8n_webhook_url" value="{{ cfg.n8n_webhook_url }}" placeholder="https://n8n.seu-dominio/webhook/..."></div>
+    </div>
+  </div>
+
+  <div class="form-panel">
+    <h2 style="font-family:Fraunces;margin:0 0 16px">Critérios de cálculo (LC 150/2015)</h2>
+    <div class="field check">
+      <input type="checkbox" name="he_criterio_8h" id="he8" {{ 'checked' if cfg.he_criterio_8h=='on' }}>
+      <label for="he8" style="margin:0">Contar hora extra apenas acima de 8h/dia (em vez de "além do previsto na regra")</label>
+    </div>
+    <div class="field check">
+      <input type="checkbox" name="adicional_noturno" id="not" {{ 'checked' if cfg.adicional_noturno=='on' }}>
+      <label for="not" style="margin:0">Calcular adicional noturno (22h–05h, 20%, hora reduzida 52'30")</label>
+    </div>
+  </div>
+
+  <button class="btn amber">Salvar configurações</button>
+</form>
+{% endblock %}

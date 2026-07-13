@@ -1,0 +1,64 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ 'Editar' if colab else 'Novo' }} colaborador{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><div class="eyebrow">Cadastros</div><h1>{{ 'Editar colaborador' if colab else 'Novo colaborador' }}</h1></div>
+  <a class="btn ghost" href="{{ url_for('admin.colaboradores') }}">Voltar</a>
+</div>
+
+<form method="post">
+  <div class="form-panel">
+    <div class="row">
+      <div class="field"><label>Nome</label><input name="nome" value="{{ colab.nome if colab else '' }}" required></div>
+      <div class="field"><label>Função</label><input name="funcao" placeholder="Ex.: Babá, Empregada doméstica" value="{{ colab.funcao if colab else '' }}"></div>
+      <div class="field"><label>Tipo de jornada</label>
+        <select name="tipo">
+          {% for t in ['mensalista','parcial','12x36'] %}
+            <option value="{{ t }}" {{ 'selected' if colab and colab.tipo==t }}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Salário base (opcional)</label>
+        <input type="text" data-money="" name="salario_base" placeholder="R$ 0,00"
+               value="{{ '%.2f'|format(colab.salario_base) if colab and colab.salario_base else '' }}"></div>
+      <div class="field"><label>Local de trabalho (geofence)</label>
+        <select name="local_id" required>
+          {% for l in locais %}<option value="{{ l.id }}" {{ 'selected' if colab and colab.local_id==l.id }}>{{ l.nome }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field"><label>PIN de acesso {{ '(deixe em branco p/ manter)' if colab else '' }}</label>
+        <input name="pin" inputmode="numeric" placeholder="4 a 6 dígitos" {{ '' if colab else 'required' }}></div>
+    </div>
+    <div class="field check">
+      <input type="checkbox" name="exige_selfie" id="selfie" {{ 'checked' if colab and colab.exige_selfie }}>
+      <label for="selfie" style="margin:0">Exigir selfie no momento do registro</label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Regras de comparecimento (jornada prevista)</h2>
+    <table>
+      <thead><tr><th>Dia</th><th>Trabalha?</th><th>Entrada</th><th>Saída</th><th>Intervalo (min)</th><th>Tolerância atraso (min)</th></tr></thead>
+      <tbody>
+      {% for d in range(7) %}
+        {% set r = regras.get(d) if regras else None %}
+        {% set default_trab = d < 5 %}
+        <tr>
+          <td><strong>{{ dias[d] }}</strong></td>
+          <td><input type="checkbox" name="dia_{{ d }}_trabalha" {{ 'checked' if (r.trabalha if r else default_trab) }}></td>
+          <td><input type="time" name="dia_{{ d }}_entrada" value="{{ r.entrada_prevista if r else '08:00' }}" style="width:120px"></td>
+          <td><input type="time" name="dia_{{ d }}_saida" value="{{ r.saida_prevista if r else '17:00' }}" style="width:120px"></td>
+          <td><input type="number" name="dia_{{ d }}_intervalo" value="{{ r.intervalo_min if r else 60 }}" style="width:90px"></td>
+          <td><input type="number" name="dia_{{ d }}_tolerancia" value="{{ r.tolerancia_atraso_min if r else 10 }}" style="width:90px"></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <button class="btn amber">Salvar colaborador</button>
+</form>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/money.js') }}"></script>{% endblock %}

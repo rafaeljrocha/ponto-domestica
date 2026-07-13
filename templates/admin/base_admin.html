@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Painel · Ponto Doméstico{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand">Ponto Doméstico<small>Painel</small></div>
+    <nav class="nav">
+      {% set ep = request.endpoint %}
+      <a href="{{ url_for('dashboard.painel') }}" class="{{ 'on' if ep=='dashboard.painel' }}">Dashboard</a>
+      <div class="grp">Cadastros</div>
+      <a href="{{ url_for('admin.colaboradores') }}" class="{{ 'on' if 'colaborador' in ep }}">Colaboradores</a>
+      <a href="{{ url_for('admin.locais') }}" class="{{ 'on' if 'locais' in ep or 'local' in ep }}">Locais / Geofence</a>
+      <a href="{{ url_for('admin.excecoes') }}" class="{{ 'on' if 'excec' in ep }}">Férias e folgas</a>
+      <a href="{{ url_for('admin.feriados') }}" class="{{ 'on' if 'feriado' in ep }}">Feriados</a>
+      <div class="grp">Operação</div>
+      <a href="{{ url_for('admin.ajustes') }}" class="{{ 'on' if 'ajuste' in ep }}">Ajustes / Auditoria</a>
+      <a href="{{ url_for('report.painel') }}" class="{{ 'on' if 'report' in ep }}">Relatório mensal</a>
+      <a href="{{ url_for('admin.config') }}" class="{{ 'on' if 'config' in ep }}">Configurações</a>
+    </nav>
+    <a class="logout" href="{{ url_for('auth.admin_logout') }}" style="color:#A9C6BD;text-decoration:none">↩ Sair</a>
+  </aside>
+  <main class="main">
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% for cat, m in msgs %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

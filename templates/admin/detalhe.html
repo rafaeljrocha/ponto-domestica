@@ -1,0 +1,71 @@
+{% extends "admin/base_admin.html" %}
+{% set meses = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'] %}
+{% set dias_abrev = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'] %}
+{% block title %}{{ colab.nome }} · {{ meses[mes] }}{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><div class="eyebrow">{{ meses[mes] }}/{{ ano }}</div><h1>{{ colab.nome }}</h1></div>
+  <div class="inline">
+    <a class="btn ghost" href="{{ url_for('export.xlsx', cid=colab.id, ano=ano, mes=mes) }}">⤓ Planilha</a>
+    <a class="btn amber" href="{{ url_for('export.espelho_pdf', cid=colab.id, ano=ano, mes=mes) }}">⤓ Espelho (PDF)</a>
+    <a class="btn ghost" href="{{ url_for('dashboard.painel', ano=ano, mes=mes) }}">Voltar</a>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card accent"><div class="k">Horas trabalhadas</div><div class="v">{{ fmt(t.liquido_min) }}</div></div>
+  <div class="card"><div class="k">HE 50%</div><div class="v sm">{{ fmt(t.he50_min) }}</div></div>
+  <div class="card"><div class="k">HE 100%</div><div class="v sm">{{ fmt(t.he100_min) }}</div></div>
+  <div class="card"><div class="k">Banco de horas</div><div class="v sm">{{ fmt(t.banco_min) }}</div></div>
+  <div class="card {{ 'warn' if t.faltas }}"><div class="k">Faltas</div><div class="v sm">{{ t.faltas }}</div></div>
+</div>
+
+<div class="panel">
+  <h2>Distribuição diária</h2>
+  <div style="padding:18px"><canvas id="graf" height="90"></canvas></div>
+</div>
+
+<div class="panel">
+  <h2>Espelho diário</h2>
+  <table>
+    <thead><tr><th>Dia</th><th></th><th class="num">Trabalhado</th><th class="num">Atraso</th>
+      <th class="num">HE 50%</th><th class="num">HE 100%</th><th class="num">Noturno</th><th>Situação</th></tr></thead>
+    <tbody>
+    {% for d in dias %}
+      <tr {{ 'style=background:#FBF9F3' if d.dia.weekday()>=5 or d.feriado }}>
+        <td style="font-variant-numeric:tabular-nums">{{ d.dia.strftime('%d/%m') }}</td>
+        <td class="muted">{{ dias_abrev[d.dia.weekday()] }}</td>
+        <td class="num">{{ fmt(d.liquido_min) if d.liquido_min else '·' }}</td>
+        <td class="num">{{ fmt(d.atraso_min) if d.atraso_min else '·' }}</td>
+        <td class="num">{{ fmt(d.he50_min) if d.he50_min else '·' }}</td>
+        <td class="num">{{ fmt(d.he100_min) if d.he100_min else '·' }}</td>
+        <td class="num">{{ fmt(d.noturno_min) if d.noturno_min else '·' }}</td>
+        <td>
+          {% if d.falta %}<span class="badge r">Falta</span>{% endif %}
+          {% if d.abonado and not d.trabalhou %}<span class="badge b">Abonado</span>{% endif %}
+          {% if d.feriado %}<span class="badge a">Feriado</span>{% endif %}
+          {% if d.aberto %}<span class="badge r">Jornada aberta</span>{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+fetch("{{ url_for('dashboard.api_grafico', cid=colab.id, ano=ano, mes=mes) }}")
+  .then(r=>r.json()).then(d=>{
+  new Chart(document.getElementById('graf'), {
+    type:'bar',
+    data:{labels:d.labels, datasets:[
+      {label:'Trabalhadas (h)', data:d.trabalhadas, backgroundColor:'#0F3D3E'},
+      {label:'Hora extra (h)', data:d.he, backgroundColor:'#E8A33D'}
+    ]},
+    options:{responsive:true, scales:{x:{stacked:true},y:{stacked:true}},
+      plugins:{legend:{position:'bottom'}}}
+  });
+});
+</script>
+{% endblock %}

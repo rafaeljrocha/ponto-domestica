@@ -1,0 +1,72 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Ajustes / Auditoria{% endblock %}
+{% block content %}
+<div class="topbar"><div><div class="eyebrow">Operação</div><h1>Ajustes / Auditoria</h1></div></div>
+<p class="muted" style="margin-top:-14px">Correções manuais de marcação (ex.: esquecimento). Toda alteração exige justificativa e fica registrada.</p>
+
+<div class="form-panel">
+  <h2 style="font-family:Fraunces;margin:0 0 14px">Incluir marcação manual</h2>
+  <form method="post" class="row" style="align-items:end">
+    <input type="hidden" name="acao" value="criar">
+    <div class="field"><label>Colaborador</label>
+      <select name="colaborador_id" required>{% for c in colaboradores %}<option value="{{ c.id }}">{{ c.nome }}</option>{% endfor %}</select></div>
+    <div class="field"><label>Tipo</label>
+      <select name="tipo"><option value="entrada">Entrada</option><option value="saida">Saída</option></select></div>
+    <div class="field"><label>Data e hora</label><input type="datetime-local" name="momento" required></div>
+    <div class="field" style="flex:2"><label>Justificativa (obrigatória)</label><input name="justificativa" required></div>
+    <div class="field"><button class="btn amber">Incluir</button></div>
+  </form>
+</div>
+
+<div class="panel">
+  <h2>Marcações recentes</h2>
+  <table>
+    <thead><tr><th>Colaborador</th><th>Tipo</th><th>Data/hora</th><th>Origem</th><th>Área</th><th></th></tr></thead>
+    <tbody>
+    {% for r in recentes %}
+      <tr>
+        <td>{{ mapa.get(r.colaborador_id,'—') }}</td>
+        <td><span class="dot {{ 'in' if r.tipo=='entrada' else 'out' }}"></span>{{ r.tipo }}</td>
+        <td style="font-variant-numeric:tabular-nums">{{ r.momento.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td><span class="badge {{ 'a' if r.origem=='ajuste' else 's' }}">{{ r.origem }}</span></td>
+        <td>{% if r.dentro_area %}<span class="badge g">dentro</span>{% else %}<span class="badge r">fora</span>{% endif %}</td>
+        <td class="num"><form method="post" onsubmit="return confirmarExclusao(this)">
+          <input type="hidden" name="acao" value="excluir"><input type="hidden" name="registro_id" value="{{ r.id }}">
+          <input type="hidden" name="justificativa" value="">
+          <button class="btn ghost sm">Excluir</button></form></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <h2>Trilha de auditoria</h2>
+  <table>
+    <thead><tr><th>Quando</th><th>Usuário</th><th>Ação</th><th>Alvo</th><th>Justificativa</th></tr></thead>
+    <tbody>
+    {% for a in logs %}
+      <tr>
+        <td style="font-variant-numeric:tabular-nums">{{ a.momento.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ a.usuario }}</td>
+        <td><span class="badge {{ 'r' if a.acao=='excluir' else 'a' if a.acao=='editar' else 'g' }}">{{ a.acao }}</span></td>
+        <td>{{ a.alvo }}</td>
+        <td class="muted">{{ a.justificativa }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5" class="muted" style="text-align:center;padding:20px">Sem registros de auditoria.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function confirmarExclusao(form){
+  var j = prompt("Justificativa para excluir esta marcação:");
+  if(!j){ return false; }
+  form.querySelector('input[name=justificativa]').value = j;
+  return true;
+}
+</script>
+{% endblock %}

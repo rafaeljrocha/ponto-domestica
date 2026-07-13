@@ -11,6 +11,19 @@ bp = Blueprint("admin", __name__, url_prefix="/admin")
 DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"]
 
 
+def _parse_money(valor):
+    """Converte texto monetário BR ('R$ 2.000,00') em float. Vazio => 0.0."""
+    s = str(valor or "").replace("R$", "").replace(" ", "").strip()
+    if not s:
+        return 0.0
+    if "," in s:  # formato BR: 1.234,56 -> remove milhares e troca vírgula por ponto
+        s = s.replace(".", "").replace(",", ".")
+    try:
+        return float(s)
+    except ValueError:
+        return 0.0
+
+
 def _log(acao, alvo, justificativa="", antes=None, depois=None):
     db.session.add(Ajuste(
         usuario=session.get("admin_nome", "admin"), acao=acao, alvo=alvo,
@@ -38,7 +51,7 @@ def colaborador_novo():
             nome=request.form["nome"].strip(),
             funcao=request.form.get("funcao", "").strip(),
             tipo=request.form.get("tipo", "mensalista"),
-            salario_base=float(request.form.get("salario_base") or 0),
+            salario_base=_parse_money(request.form.get("salario_base")),
             exige_selfie=bool(request.form.get("exige_selfie")),
             local_id=int(request.form["local_id"]),
             ativo=True,
@@ -64,7 +77,7 @@ def colaborador_editar(cid):
         c.nome = request.form["nome"].strip()
         c.funcao = request.form.get("funcao", "").strip()
         c.tipo = request.form.get("tipo", "mensalista")
-        c.salario_base = float(request.form.get("salario_base") or 0)
+        c.salario_base = _parse_money(request.form.get("salario_base"))
         c.exige_selfie = bool(request.form.get("exige_selfie"))
         c.local_id = int(request.form["local_id"])
         if request.form.get("pin", "").strip():

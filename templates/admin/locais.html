@@ -33,7 +33,13 @@
         <td style="font-variant-numeric:tabular-nums">{{ '%.6f'|format(l.latitude) }}, {{ '%.6f'|format(l.longitude) }}</td>
         <td>{{ l.raio_m }}m + {{ l.tolerancia_m }}m = <strong>{{ l.raio_efetivo }}m</strong></td>
         <td>{% if l.ativo %}<span class="badge g">Ativo</span>{% else %}<span class="badge s">Inativo</span>{% endif %}</td>
-        <td class="num"><button class="btn ghost sm" onclick="document.getElementById('e{{ l.id }}').classList.toggle('hidden')">Editar</button></td>
+        <td class="num" style="white-space:nowrap">
+          <button class="btn ghost sm" onclick="document.getElementById('e{{ l.id }}').classList.toggle('hidden')">Editar</button>
+          <form method="post" action="{{ url_for('admin.local_excluir', lid=l.id) }}" style="display:inline"
+                onsubmit="return confirm('Excluir o local {{ l.nome }}? Só é possível se não houver colaboradores vinculados.')">
+            <button class="btn danger sm">Excluir</button>
+          </form>
+        </td>
       </tr>
       <tr id="e{{ l.id }}" class="hidden"><td colspan="5" style="background:#FBF9F3">
         <form method="post" action="{{ url_for('admin.local_editar', lid=l.id) }}" class="row" style="align-items:end">

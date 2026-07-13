@@ -182,6 +182,25 @@ def _parse_coord(texto):
     return None, None
 
 
+@bp.route("/locais/<int:lid>/excluir", methods=["POST"])
+@admin_req
+def local_excluir(lid):
+    l = db.session.get(Local, lid) or abort_404()
+    vinculados = Colaborador.query.filter_by(local_id=lid).count()
+    if vinculados:
+        flash(f"Não é possível excluir '{l.nome}': há {vinculados} colaborador(es) "
+              f"vinculado(s). Reatribua-os a outro local antes de excluir.", "erro")
+        return redirect(url_for("admin.locais"))
+    if Local.query.count() <= 1:
+        flash("Não é possível excluir o único local cadastrado.", "erro")
+        return redirect(url_for("admin.locais"))
+    nome = l.nome
+    db.session.delete(l)
+    db.session.commit()
+    flash(f"Local '{nome}' excluído.", "ok")
+    return redirect(url_for("admin.locais"))
+
+
 # --------------------------------------------------------------------------- #
 # Exceções (férias / folgas)
 # --------------------------------------------------------------------------- #

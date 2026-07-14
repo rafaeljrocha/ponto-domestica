@@ -36,7 +36,8 @@ def gera_xlsx(colaboradores, ano, mes):
         ws.append([f"Espelho de Ponto — {c.nome} — {MESES[mes]}/{ano}"])
         ws["A1"].font = Font(bold=True, size=13)
         ws.append([])
-        cab = ["Dia", "Semana", "Trabalhado", "Intervalo", "Atraso",
+        cab = ["Dia", "Semana", "Entrada", "Saída desc.", "Entrada desc.", "Saída",
+               "Trabalhado", "Intervalo", "Atraso",
                "HE 50%", "HE 100%", "Noturno", "Situação"]
         ws.append(cab)
         for col in range(1, len(cab) + 1):
@@ -53,9 +54,24 @@ def gera_xlsx(colaboradores, ano, mes):
                 situacao.append("Feriado")
             if d["aberto"]:
                 situacao.append("Jornada aberta")
+
+            def _hm(x):
+                return x.strftime("%H:%M") if x else ""
+            # descanso: horário batido, ou indicação do pré-assinalado
+            if d["saida_descanso"]:
+                s_desc, e_desc = _hm(d["saida_descanso"]), _hm(d["volta_descanso"])
+            elif d["entrada"] and d["intervalo_min"]:
+                s_desc, e_desc = f"({fmt_hm(d['intervalo_min'])} pré)", "(desc.)"
+            else:
+                s_desc, e_desc = "", ""
+
             ws.append([
                 d["dia"].strftime("%d/%m"),
                 DIAS_ABREV[d["dia"].weekday()],
+                _hm(d["entrada"]),
+                s_desc,
+                e_desc,
+                _hm(d["saida"]),
                 fmt_hm(d["liquido_min"]) if d["liquido_min"] else "",
                 fmt_hm(d["intervalo_min"]) if d["intervalo_min"] else "",
                 fmt_hm(d["atraso_min"]) if d["atraso_min"] else "",
@@ -84,9 +100,9 @@ def gera_xlsx(colaboradores, ano, mes):
             ws.append([nome, val])
             ws.cell(row=ws.max_row, column=1).font = Font(bold=True)
 
-        widths = [10, 9, 12, 11, 9, 9, 9, 10, 22]
+        widths = [8, 8, 9, 11, 12, 9, 12, 11, 9, 9, 9, 10, 22]
         for i, w in enumerate(widths, 1):
-            ws.column_dimensions[chr(64 + i)].width = w
+            ws.column_dimensions[ws.cell(row=1, column=i).column_letter].width = w
 
     buf = io.BytesIO()
     wb.save(buf)

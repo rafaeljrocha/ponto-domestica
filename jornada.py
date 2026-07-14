@@ -121,6 +121,8 @@ def calcula_dia(dia, registros_dia, regra, is_feriado, is_abonado,
         "feriado": is_feriado, "aberto": False,
         "he50_min": 0, "he100_min": 0, "noturno_min": 0,
         "previsto_min": 0, "entrada_real": None,
+        "entrada": None, "saida_descanso": None,
+        "volta_descanso": None, "saida": None,
     }
 
     prev_trab = bool(regra and regra.trabalha)
@@ -133,6 +135,23 @@ def calcula_dia(dia, registros_dia, regra, is_feriado, is_abonado,
 
     ps, aberto = pares(registros_dia)
     r["aberto"] = aberto
+
+    # horários batidos para exibição no espelho (Opção A):
+    # 2 batidas -> Entrada/Saída (descanso fica pré-assinalado);
+    # 4 batidas -> Entrada, Saída descanso, Entrada descanso, Saída.
+    marc = sorted(x.momento for x in registros_dia)
+    n = len(marc)
+    if n >= 1:
+        r["entrada"] = marc[0]
+    if n == 2:
+        r["saida"] = marc[1]
+    elif n == 3:
+        r["saida_descanso"] = marc[1]
+        r["volta_descanso"] = marc[2]  # saída final em aberto
+    elif n >= 4:
+        r["saida_descanso"] = marc[1]
+        r["volta_descanso"] = marc[2]
+        r["saida"] = marc[-1]
 
     if not ps:
         # sem marcações: falta apenas se era dia previsto, não abonado e o dia "conta"
@@ -148,10 +167,20 @@ def calcula_dia(dia, registros_dia, regra, is_feriado, is_abonado,
             noturno += _minutos_noturnos(ini, fim)
     bruto = int(bruto)
 
-    # desconto do intervalo pré-assinalado (só se a jornada comportar)
-    desc = intervalo if bruto > (previsto_liq if previsto_liq else MIN_8H) - 15 else 0
-    desc = min(desc, max(0, bruto))
-    liquido = max(0, bruto - desc)
+    # Intervalo:
+    # - 1 par (descanso NÃO batido): desconta o intervalo pré-assinalado da regra;
+    # - 2+ pares (descanso batido): o descanso já está fora dos pares, então usa-se
+    #   o intervalo real (soma das folgas entre pares) e NÃO se desconta de novo.
+    if len(ps) >= 2:
+        intervalo_real = 0
+        for i in range(len(ps) - 1):
+            intervalo_real += int((ps[i + 1][0] - ps[i][1]).total_seconds() / 60)
+        desc = intervalo_real
+        liquido = bruto
+    else:
+        desc = intervalo if bruto > (previsto_liq if previsto_liq else MIN_8H) - 15 else 0
+        desc = min(desc, max(0, bruto))
+        liquido = max(0, bruto - desc)
 
     r["bruto_min"] = bruto
     r["intervalo_min"] = desc

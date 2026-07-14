@@ -28,13 +28,25 @@
 <div class="panel">
   <h2>Espelho diário</h2>
   <table>
-    <thead><tr><th>Dia</th><th></th><th class="num">Trabalhado</th><th class="num">Atraso</th>
+    <thead><tr><th>Dia</th><th></th>
+      <th>Entrada</th><th>Saída desc.</th><th>Entrada desc.</th><th>Saída</th>
+      <th class="num">Trabalhado</th><th class="num">Atraso</th>
       <th class="num">HE 50%</th><th class="num">HE 100%</th><th class="num">Noturno</th><th>Situação</th></tr></thead>
     <tbody>
     {% for d in dias %}
       <tr {{ 'style=background:#FBF9F3' if d.dia.weekday()>=5 or d.feriado }}>
         <td style="font-variant-numeric:tabular-nums">{{ d.dia.strftime('%d/%m') }}</td>
         <td class="muted">{{ dias_abrev[d.dia.weekday()] }}</td>
+        <td style="font-variant-numeric:tabular-nums">{{ d.entrada.strftime('%H:%M') if d.entrada else '·' }}</td>
+        <td style="font-variant-numeric:tabular-nums">
+          {% if d.saida_descanso %}{{ d.saida_descanso.strftime('%H:%M') }}
+          {% elif d.entrada and d.intervalo_min %}<span class="muted" style="font-size:.78rem">{{ fmt(d.intervalo_min) }} pré</span>
+          {% else %}·{% endif %}</td>
+        <td style="font-variant-numeric:tabular-nums">
+          {% if d.volta_descanso %}{{ d.volta_descanso.strftime('%H:%M') }}
+          {% elif d.entrada and d.intervalo_min %}<span class="muted" style="font-size:.78rem">desc.</span>
+          {% else %}·{% endif %}</td>
+        <td style="font-variant-numeric:tabular-nums">{{ d.saida.strftime('%H:%M') if d.saida else '·' }}</td>
         <td class="num">{{ fmt(d.liquido_min) if d.liquido_min else '·' }}</td>
         <td class="num">{{ fmt(d.atraso_min) if d.atraso_min else '·' }}</td>
         <td class="num">{{ fmt(d.he50_min) if d.he50_min else '·' }}</td>

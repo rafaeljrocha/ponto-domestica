@@ -1,6 +1,7 @@
 """Exportação: planilha .xlsx (espelho) e espelho de ponto em PDF."""
 import io
 from datetime import date
+from tempo import hoje as _hoje
 from flask import Blueprint, request, send_file, render_template
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
@@ -17,7 +18,7 @@ DIAS_ABREV = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
 
 def _periodo():
-    hoje = date.today()
+    hoje = _hoje()
     return int(request.args.get("ano", hoje.year)), int(request.args.get("mes", hoje.month))
 
 

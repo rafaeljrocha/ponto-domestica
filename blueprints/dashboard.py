@@ -1,5 +1,6 @@
 """Dashboard: métricas principais do mês."""
 from datetime import date
+from tempo import hoje as _hoje
 from flask import Blueprint, render_template, request, jsonify, session
 from models import db, Colaborador
 from blueprints.auth import admin_req
@@ -10,7 +11,7 @@ bp = Blueprint("dashboard", __name__, url_prefix="/admin")
 
 
 def _periodo():
-    hoje = date.today()
+    hoje = _hoje()
     ano = int(request.args.get("ano", hoje.year))
     mes = int(request.args.get("mes", hoje.month))
     return ano, mes

@@ -2,6 +2,7 @@
 que envia o e-mail (Gmail) com a planilha anexada."""
 import base64
 from datetime import date
+from tempo import hoje as _hoje
 from flask import Blueprint, request, redirect, url_for, flash, render_template
 import requests
 from models import db, Colaborador, Config as Cfg
@@ -16,7 +17,7 @@ MESES = ["", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
 
 
 def _mes_anterior():
-    hoje = date.today()
+    hoje = _hoje()
     return (hoje.year - 1, 12) if hoje.month == 1 else (hoje.year, hoje.month - 1)
 
 

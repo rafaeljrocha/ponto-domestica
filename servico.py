@@ -3,6 +3,7 @@ e roda o motor de jornada para um colaborador em um mês."""
 import calendar
 from datetime import date, datetime
 from models import db, Registro, Regra, Excecao, Feriado, Config as Cfg
+from tempo import hoje as _hoje
 import jornada
 
 
@@ -36,7 +37,7 @@ def calcula_colaborador_mes(colab, ano, mes):
         por_dia.setdefault(r.momento.date(), []).append(r)
 
     cadastro = colab.criado_em.date() if colab.criado_em else date(1900, 1, 1)
-    hoje = date.today()
+    hoje = _hoje()
 
     dias = []
     for d in range(1, calendar.monthrange(ano, mes)[1] + 1):

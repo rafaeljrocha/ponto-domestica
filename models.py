@@ -14,6 +14,7 @@ Entidades:
 from datetime import datetime, date
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
+from tempo import agora
 
 db = SQLAlchemy()
 
@@ -60,7 +61,7 @@ class Colaborador(db.Model):
     exige_selfie = db.Column(db.Boolean, default=False)
     ativo = db.Column(db.Boolean, default=True)
     local_id = db.Column(db.Integer, db.ForeignKey("local.id"))
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+    criado_em = db.Column(db.DateTime, default=agora)
 
     regras = db.relationship("Regra", backref="colaborador", lazy=True,
                              cascade="all, delete-orphan")
@@ -95,7 +96,7 @@ class Registro(db.Model):
     __tablename__ = "registro"
     id = db.Column(db.Integer, primary_key=True)
     colaborador_id = db.Column(db.Integer, db.ForeignKey("colaborador.id"), nullable=False)
-    momento = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    momento = db.Column(db.DateTime, nullable=False, default=agora)
     tipo = db.Column(db.String(10), default="entrada")     # entrada | saida (derivado)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
@@ -135,7 +136,7 @@ class Ajuste(db.Model):
     """Trilha de auditoria de alterações manuais."""
     __tablename__ = "ajuste"
     id = db.Column(db.Integer, primary_key=True)
-    momento = db.Column(db.DateTime, default=datetime.utcnow)
+    momento = db.Column(db.DateTime, default=agora)
     usuario = db.Column(db.String(60))
     acao = db.Column(db.String(30))                        # criar | editar | excluir
     alvo = db.Column(db.String(60))                        # ex.: registro:123

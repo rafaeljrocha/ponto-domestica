@@ -8,14 +8,15 @@ from models import db, Colaborador, Registro
 from jornada import dentro_da_area
 from blueprints.auth import colab_req
 from config import Config
+from tempo import agora, hoje
 
 bp = Blueprint("registro", __name__, url_prefix="/registro")
 
 
 def _registros_hoje(colab_id):
-    hoje = date.today()
-    ini = datetime.combine(hoje, datetime.min.time())
-    fim = datetime.combine(hoje, datetime.max.time())
+    d = hoje()
+    ini = datetime.combine(d, datetime.min.time())
+    fim = datetime.combine(d, datetime.max.time())
     return (Registro.query
             .filter(Registro.colaborador_id == colab_id,
                     Registro.momento >= ini, Registro.momento <= fim)
@@ -54,7 +55,7 @@ def marcar():
     if colab.exige_selfie and selfie and selfie.startswith("data:image"):
         try:
             cabecalho, b64 = selfie.split(",", 1)
-            nome = f"{colab.id}_{datetime.now():%Y%m%d%H%M%S}.jpg"
+            nome = f"{colab.id}_{agora():%Y%m%d%H%M%S}.jpg"
             caminho = os.path.join(Config.UPLOAD_DIR, nome)
             with open(caminho, "wb") as fp:
                 fp.write(base64.b64decode(b64))
@@ -64,7 +65,7 @@ def marcar():
 
     codigo = secrets.token_hex(4).upper()
     reg = Registro(
-        colaborador_id=colab.id, momento=datetime.now(), tipo=tipo,
+        colaborador_id=colab.id, momento=agora(), tipo=tipo,
         latitude=lat, longitude=lng, distancia_m=dist, dentro_area=dentro,
         selfie_path=selfie_path, origem="mobile", comprovante=codigo,
     )
